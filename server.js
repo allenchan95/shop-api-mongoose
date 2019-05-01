@@ -3,7 +3,8 @@ const express = require('express');
 
 const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/shop');
-const mongoConnect = require('./util/database').mongoConnect;
+// const mongoConnect = require('./util/database').mongoConnect;
+const mongoose = require('mongoose');
 const User = require('./models/user');
 const app = express();
 
@@ -17,9 +18,9 @@ app.use(bodyParser.json());
 
 app.use((req,res, next) =>{
     console.log('HELLO! user');
-    User.findById('5cc6df8e1c9d440000d5d340')
+    User.findById('5cc958a662962c27189ab957')
     .then(user =>{
-        req.user = new User(user.name,user.email,user.cart,user._id);
+        req.user = user;
         next();
     })
     .catch(err => console.log(err))
@@ -33,9 +34,30 @@ app.use((req, res, next)=>{
 });
 
 
-mongoConnect(()=>{
+mongoose
+  .connect(
+    'mongodb+srv://allen:123123123zZ@cluster0-tzfsu.mongodb.net/shop?retryWrites=true'
+  )
+  .then(result => {
+    User.findOne().then(user=>{
+      if(!user){
+        const user = new User({
+          name: "Allen",
+          email: 'allen@gmamil.com',
+          cart: {
+            items: []
+          }
+        })
+        user.save();
+      }
+    })
+
     app.listen(3000);
-});
+  })
+  .catch(err => {
+    console.log(err);
+  });
+
 
 
 
